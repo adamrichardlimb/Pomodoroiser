@@ -5,7 +5,7 @@ import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 function App() {
-  const [backendData, setBackendData] = useState({users: []});
+  const [backendData, setBackendData] = useState({items: [{kind: ""}]});
   const [playing, setPlaying] = useState(false);
 
   const validateUrlOrNotify = (url: string) => {
@@ -32,6 +32,16 @@ function App() {
     return true;
   }
 
+  const setDataFromResponse = (backendResponse: Response) => {
+    //Obviously we only want to set data if the response was okay
+    if(!backendResponse.ok) {
+      toast(backendResponse.statusText)
+      return;
+    }
+
+    //Otherwise set it as our data
+  }
+
   //Pass in entered playlist - do basic validation and send to API
   const getData = (enteredPlaylist: string) => {
 
@@ -39,9 +49,7 @@ function App() {
 
     if(valid) {
       fetch(`api/?playlist=${enteredPlaylist}`).then(
-        response => response.json()
-      ).then(
-        data => setBackendData(data)
+        resp => setDataFromResponse(resp)
       )
     }
   }
@@ -54,7 +62,7 @@ function App() {
 
     <div>
 
-      {(backendData.users.length == 0) ? <p>Loading</p> : backendData.users.map((user, i) => (<p key={i}>{user}</p>))}
+      {(backendData.items.length == 0) ? <p>Loading</p> : backendData.items.map((item, i) => (<p key={i}>{item.kind}</p>))}
 
     </div>
 
