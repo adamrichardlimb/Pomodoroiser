@@ -1,2 +1,2 @@
 # Pomodoroiser
-A React+Vue+Express.js application for creating Pomodoro timers from YouTube playlists.
+A React+Vite+Express.js application for creating Pomodoro timers from YouTube playlists.
