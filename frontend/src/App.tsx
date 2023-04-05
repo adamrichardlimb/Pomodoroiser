@@ -8,22 +8,42 @@ function App() {
   const [backendData, setBackendData] = useState({users: []});
   const [playing, setPlaying] = useState(false);
 
-  //Pass in entered playlist - do basic validation and send to API
-  const getData = (enteredPlaylist: string) => {
+  const validateUrlOrNotify = (url: string) => {
     var valid_youtube_url_re = /^(?:https?:\/\/)?(?:www\.)?(?:youtu\.be\/|youtube\.com)/;
-    var valid_youtube = enteredPlaylist.match(valid_youtube_url_re);
+    var valid_youtube = url.match(valid_youtube_url_re);
+
+    const urlParams = new URLSearchParams(url);
+    //URLSearchParams seems to ignore list when url is yt.com/playlist?list=
+    //Maybe there's a workaround but this suits - just makes playlist ID extraction a bit harder later
+    var url_has_playlist_param = urlParams.get("list") || url.includes("?list=");
 
     if(!valid_youtube) {
       //Create alert if not a YT link
       toast("Not a valid YouTube URL!");
-      return;
+      return false;
     }
 
-    fetch(`api/?playlist=${enteredPlaylist}`).then(
-      response => response.json()
-    ).then(
-      data => setBackendData(data)
-    )
+    if(!url_has_playlist_param) {
+      //Create alert if not a YT link
+      toast("Not a valid YouTube playlist!");
+      return false;
+    }
+
+    return true;
+  }
+
+  //Pass in entered playlist - do basic validation and send to API
+  const getData = (enteredPlaylist: string) => {
+
+    var valid = validateUrlOrNotify(enteredPlaylist);
+
+    if(valid) {
+      fetch(`api/?playlist=${enteredPlaylist}`).then(
+        response => response.json()
+      ).then(
+        data => setBackendData(data)
+      )
+    }
   }
 
   return (
