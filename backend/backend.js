@@ -2,6 +2,7 @@
 require('dotenv').config()
 
 const API_KEY = process.env.API_KEY;
+const { bestFitDecreasing } = require('bin-packer');
 const express = require('express');
 const app = express();
 
@@ -66,15 +67,24 @@ app.get("/api", async (req, res) => {
 
             videos_json["items"].forEach(item => {
                 var video_obj = {
-                    "ID": item["id"],
-                    "Duration": toNumberDuration(item["contentDetails"]["duration"])
+                    "id": item["id"],
+                    "duration": toNumberDuration(item["contentDetails"]["duration"])
                 };
 
                 
                 pomodoro.push(video_obj);
             });
+
+            //Now use a bin-covering algorithm to turn into an array of array
+            //Use the BestFitDecreasing solution because it is the fastest and also we want the largest playlists first
+            //i.e. if a playlist is 26m long and we want a session of 25m - we are going to have one playlist of 1m length
+            //Nothing we can do about this but give people the best results first
+
+            //TODO - allow users to ask for oversized playlists too
+            console.log(pomodoro);
+            var result = bestFitDecreasing(pomodoro, video => video['duration'], 25*60);
             
-            res.send(pomodoro);
+            res.send(result.bins);
         }
     }
 });
