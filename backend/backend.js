@@ -81,7 +81,6 @@ app.get("/api", async (req, res) => {
             //Nothing we can do about this but give people the best results first
 
             //TODO - allow users to ask for oversized playlists too
-            console.log(pomodoro);
             var result = bestFitDecreasing(pomodoro, video => video['duration'], 25*60);
             
             res.send(result.bins);
