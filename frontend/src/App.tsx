@@ -9,7 +9,7 @@ type playlistInfo = {id: string, duration: number}[][];
 
 function App() {
   const [backendData, setBackendData] = useState(null);
-  const [playing, setPlaying] = useState(false);
+  const [complete, setComplete] = useState(false);
 
   const validateUrlOrNotify = (url: string) => {
     var valid_youtube_url_re = /^(?:https?:\/\/)?(?:www\.)?(?:youtu\.be\/|youtube\.com)/;
@@ -48,7 +48,8 @@ function App() {
           toast(resp.statusText)
           return;
         }
-      }));
+      }))
+      setComplete(false);
     }
   }
 
@@ -58,7 +59,7 @@ function App() {
 
     <Searchbar onSearch={getData} />
 
-    {backendData ? <ReactPlayerPomodoro pomodoros={backendData} breakLength={25}/> : null}
+    {backendData ? complete ? <h1>Session complete!</h1> : <ReactPlayerPomodoro pomodoros={backendData} breakLength={25} onComplete={() => setComplete(true)}/> : null}
 
     <ToastContainer />
     </>

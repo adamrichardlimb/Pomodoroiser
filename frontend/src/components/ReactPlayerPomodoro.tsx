@@ -3,10 +3,12 @@ import { useState, useEffect, useRef } from 'react'
 import playlistInfo from '../shared/playlistInfo';
 import { useTimer } from 'react-timer-hook';
 import { ToastContainer, toast } from 'react-toastify';
+import PomodoroTimer from './PomodoroTimer';
 
 interface Props {
     pomodoros: playlistInfo;
     breakLength: number;
+    onComplete: () => void;
     shufflePlaylists?: boolean;
     shufflePlaylistItems?: boolean;
 }
@@ -15,22 +17,22 @@ interface Props {
 let videoElement: YouTubePlayer = null;
 
 //This component will contain a React player - as well as the associated elements
-function ReactPlayerPomodoro({pomodoros, breakLength}: Props) {
+function ReactPlayerPomodoro({pomodoros, breakLength, onComplete}: Props) {
 
     const [autoplay, setAutoplay] = useState(1);
     const [currentPlaylist, setCurrentPlaylist] = useState(0);
     const [currentVideo, setCurrentVideo] = useState(0);
+    const [skipDisabled, setSkipDisabled] = useState(false);
     const [onBreak, setOnBreak] = useState(false);
     const [isPaused, setIsPaused] = useState(false);
-
-    const togglePause = () => {
-        setIsPaused(!isPaused);
-    };
+    const [complete, setComplete] = useState(false);
     
     const getPlaylistLength = () => {
         return pomodoros[currentPlaylist].map(song => song.duration).reduce((a, b) => {return a + b;});
     }
 
+    //The following effect handles changes to the player
+    //If paused - it pauses the player
     useEffect(() => {
         if (videoElement != null) {
             // Pause and Play video
@@ -42,6 +44,11 @@ function ReactPlayerPomodoro({pomodoros, breakLength}: Props) {
         }
     }, [isPaused, videoElement]);
 
+    //The following effect handles when the playlist updates
+    //If the playlist updates - it alters the duration
+    useEffect(() => {
+        setTimerLength(getTimerLength(getPlaylistLength()))
+    }, [currentPlaylist]);
 
     //On mount add the player
     const onReady = (event: YouTubePlayer) => {
@@ -53,45 +60,42 @@ function ReactPlayerPomodoro({pomodoros, breakLength}: Props) {
         time.setSeconds(time.getSeconds() + length);
         return time;
     }
+    
+    const [timerLength, setTimerLength] = useState(getTimerLength(getPlaylistLength()));
 
     //This function will handle all the logic when a timer ends
     const nextPeriod = (force_session_end: boolean = false) => {
+
         //If on break - next period is the next playlist
         if (force_session_end || (currentVideo + 1 == pomodoros[currentPlaylist].length)) {
             if(onBreak) {
-                setOnBreak(false);
-                setAutoplay(1);
-                //If at the end - reset. Else continue
-                setCurrentPlaylist(currentPlaylist + 1 == pomodoros.length ? 0 : currentPlaylist + 1);
-                setCurrentVideo(0);
-                setIsPaused(false);
-                restart(getTimerLength(getPlaylistLength()));
+                if (currentPlaylist + 1 == pomodoros.length) {
+                    setIsPaused(true);
+                    setComplete(true);
+                    setOnBreak(false);
+                }
+                else {
+                    console.log("next playlist");
+                    setOnBreak(false);
+                    setAutoplay(1);
+                    setCurrentPlaylist((currentPlaylist) => {return currentPlaylist + 1});
+                    setCurrentVideo(0);
+                    setIsPaused(false);
+                }
             } else {
                 //If not on break - end the session early
                 //Pause the video 
                 setOnBreak(true);
                 setIsPaused(true);
-                restart(getTimerLength(breakLength));
+                setTimerLength(getTimerLength(breakLength));
             }
         }
         else {
+            console.log("next video");
             //Otherwise just get the next video
-            setCurrentVideo(currentVideo + 1);
+            setCurrentVideo((currentVideo) => currentVideo + 1);
         };
     }
-    
-    const {
-        seconds,
-        minutes,
-        hours,
-        days,
-        isRunning,
-        start,
-        pause,
-        resume,
-        restart,
-    } = useTimer({expiryTimestamp: getTimerLength(getPlaylistLength()), onExpire: () => nextPeriod(true) });
-    
 
     const setNextVideo: YouTubeProps['onEnd'] = (event) => {nextPeriod()}
 
@@ -100,7 +104,7 @@ function ReactPlayerPomodoro({pomodoros, breakLength}: Props) {
         setIsPaused(true);
 
         //Pause timer only if not on break
-        if (!onBreak) pause();
+        if (!onBreak) setIsPaused(true);
     }
 
     const onPlay: YouTubeProps['onPlay'] = (event) => {
@@ -116,7 +120,6 @@ function ReactPlayerPomodoro({pomodoros, breakLength}: Props) {
         //Resume timer only if not on break
         if (!onBreak) {
             setIsPaused(false);
-            resume();
         }
         else toast("Player interaction disabled while on break!");
     }
@@ -125,7 +128,28 @@ function ReactPlayerPomodoro({pomodoros, breakLength}: Props) {
         return pomodoros[currentPlaylist][currentVideo].id;}
 
     const getRestartLabel = () => {
-        return onBreak ? "End break early" : "End session early";
+        if(complete) {
+            return "Restart?";
+        }
+        else return onBreak ? "End break early" : "End session early";
+    }
+
+    //Need to set timeout on the button to prevent spamming
+    //If you try to change the video element as the element is already changing - it will return null and cause a TypeError
+    const endPeriodEarly = () => {
+        if(complete) {
+            setCurrentPlaylist(0);
+            setCurrentVideo(0);
+            setComplete(false);
+        }
+        else {
+            setSkipDisabled(true);
+            nextPeriod(true);
+
+            setTimeout(() => {
+                setSkipDisabled(false);
+            }, 500);
+        }
     }
 
     return <>
@@ -144,10 +168,8 @@ function ReactPlayerPomodoro({pomodoros, breakLength}: Props) {
                 style={{ pointerEvents: 'none' }}
                 />
                 {<div style={{textAlign: 'center'}}>
-                    <div>
-                    <span>{hours}</span>:<span>{minutes}</span>:<span>{seconds}</span>
-                    </div>
-                    <button onClick={() => nextPeriod(true)}>{pomodoros[currentPlaylist] == null ? "Complete!" : getRestartLabel()}</button>
+                    <PomodoroTimer timestamp={timerLength} expiryFunction={nextPeriod}/>
+                    <button onClick={endPeriodEarly} disabled = {skipDisabled}>{pomodoros[currentPlaylist] == null ? "Loading..." : getRestartLabel()}</button>
                 </div>}
 
             <ToastContainer />
