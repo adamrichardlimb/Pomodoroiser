@@ -28,7 +28,7 @@ function PomodoroTimer( {timestamp, expiryFunction}: Props) {
 
     return  <>
                 <div>
-                <span>{hours}</span>:<span>{minutes}</span>:<span>{seconds}</span>
+                    <span>{hours}</span>:<span>{minutes}</span>:<span>{seconds}</span>
                 </div>
             </>
 }

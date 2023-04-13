@@ -1,8 +1,6 @@
 import YouTube, {YouTubeProps, YouTubePlayer} from 'react-youtube';
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import playlistInfo from '../shared/playlistInfo';
-import { useTimer } from 'react-timer-hook';
-import { ToastContainer, toast } from 'react-toastify';
 import PomodoroTimer from './PomodoroTimer';
 
 interface Props {
@@ -75,7 +73,6 @@ function ReactPlayerPomodoro({pomodoros, breakLength, onComplete}: Props) {
                     setOnBreak(false);
                 }
                 else {
-                    console.log("next playlist");
                     setOnBreak(false);
                     setAutoplay(1);
                     setCurrentPlaylist((currentPlaylist) => {return currentPlaylist + 1});
@@ -91,7 +88,6 @@ function ReactPlayerPomodoro({pomodoros, breakLength, onComplete}: Props) {
             }
         }
         else {
-            console.log("next video");
             //Otherwise just get the next video
             setCurrentVideo((currentVideo) => currentVideo + 1);
         };
@@ -121,7 +117,6 @@ function ReactPlayerPomodoro({pomodoros, breakLength, onComplete}: Props) {
         if (!onBreak) {
             setIsPaused(false);
         }
-        else toast("Player interaction disabled while on break!");
     }
 
     const getVideo = () => {
@@ -171,8 +166,6 @@ function ReactPlayerPomodoro({pomodoros, breakLength, onComplete}: Props) {
                     <PomodoroTimer timestamp={timerLength} expiryFunction={nextPeriod}/>
                     <button onClick={endPeriodEarly} disabled = {skipDisabled}>{pomodoros[currentPlaylist] == null ? "Loading..." : getRestartLabel()}</button>
                 </div>}
-
-            <ToastContainer />
             </>;
 }
 

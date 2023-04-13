@@ -16,12 +16,15 @@ function Searchbar({onSearch}: Props) {
 
     return (
         <>
-            <textarea
-                value={playlist}
-                onChange={handleTextareaChange}
-            />
+            <div style={{padding: '1em', display: 'flex', alignContent: 'center'}}>
+                <textarea
+                    value={playlist}
+                    onChange={handleTextareaChange}
+                    style={{resize: "none", width: "60%"}}
+                />
 
-            <button onClick={() => onSearch(playlist)}>Pomodoroise!</button>
+                <button style={{float: 'right', marginLeft: 'auto'}} onClick={() => onSearch(playlist)}>Pomodoroise!</button>
+            </div>
         </>
     );
 }
