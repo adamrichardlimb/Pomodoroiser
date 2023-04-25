@@ -1,16 +1,23 @@
 import { useEffect, useState } from 'react'
 import './App.css'
+import image from './assets/bg.png'
 import Searchbar from './components/Searchbar'
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import ReactPlayerPomodoro from './components/ReactPlayerPomodoro';
 import * as THREE from 'three';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
+import pomodoro from './assets/pomodoro.glb';
 
 type playlistInfo = {id: string, duration: number}[][];
 
 function App() {
   const [backendData, setBackendData] = useState(null);
   const [complete, setComplete] = useState(false);
+
+  function getRandomArbitrary(min: number, max: number) {
+    return Math.random() * (max - min) + min;
+  }
 
   useEffect(() => {
     const scene = new THREE.Scene();
@@ -25,15 +32,46 @@ function App() {
     renderer.setSize( window.innerWidth, window.innerHeight );
     camera.position.setZ(30);
 
-    const geometry = new THREE.TorusGeometry(10, 3, 16, 100);
-    const material = new THREE.MeshBasicMaterial({color: 0xFF6347, wireframe: true});
-    const torus = new THREE.Mesh(geometry, material);
+    //Create space background
+    const space_texture = new THREE.TextureLoader().load(image);
+    scene.background = space_texture;
 
-    scene.add(torus);
+    const point_light = new THREE.PointLight(0xffffff);
+    point_light.position.set(0,0,25);
+    scene.add(point_light);
+    
+    var tomato = new THREE.Group;
+    var tomatoes = [tomato];
 
-    //renderer.render(scene, camera);
+    var loader = new GLTFLoader();
+    loader.load(
+       pomodoro,
+       function ( gltf ) {
+          tomato = gltf.scene;
+
+          for(var i=0; i<10; i++) {
+            var next_pomodoro = tomato.clone();
+            next_pomodoro.scale.set(3,3,3);
+
+            next_pomodoro.position.set(
+              getRandomArbitrary(-40, 40),
+              getRandomArbitrary(-30, 30),
+              0);
+            scene.add(next_pomodoro);
+            tomatoes.push(next_pomodoro);
+          }
+       },
+    );
 
     function animate() {
+      for(var i = 0; i<tomatoes.length; i++) {
+        //If even - spin one way, else spin the other
+        var evens = i % 2 == 0;
+
+        tomatoes[i].rotateX(evens ? -0.05 : 0.05);
+        tomatoes[i].rotateY(evens ? 0.05 : 0.05);
+        tomatoes[i].rotateY(evens ? -0.05 : 0.05);
+      }
       requestAnimationFrame(animate);
       renderer.render(scene, camera);
     }
@@ -88,13 +126,14 @@ function App() {
       <div id="pomodoro" style={{
                     position: 'absolute', left: '50%', top: '50%',
                     transform: 'translate(-50%, -50%)',
-                    borderRadius: '5%',
+                    borderRadius: '1em',
+                    minWidth: '40%',
                     padding: '1em',
-                    backgroundColor: 'darkgrey'
+                    backgroundColor: 'rgba(0,0,0,0.5)'
                 }}>
         <Searchbar onSearch={getData} />
 
-        {backendData ? complete ? <h1>Session complete!</h1> : <ReactPlayerPomodoro pomodoros={backendData} breakLength={25} onComplete={() => setComplete(true)}/> : null}
+        {backendData ? complete ? <h1>Session complete!</h1> : <ReactPlayerPomodoro pomodoros={backendData} breakLength={25} onComplete={() => setComplete(true)} shufflePlaylists={true} shufflePlaylistItems={true}/> : null}
       </div>
       <ToastContainer />
     </>

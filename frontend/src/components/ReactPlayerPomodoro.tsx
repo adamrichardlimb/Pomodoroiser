@@ -11,12 +11,44 @@ interface Props {
     shufflePlaylistItems?: boolean;
 }
 
+//Steal Fisher-Yates shuffle from Mike Bostock
+//Not nice to use type of any - but we won't be shuffling anything else in this project so it's a safe assumption
+function shuffle(array: any[]) {
+    let currentIndex = array.length,  randomIndex;
+  
+    // While there remain elements to shuffle.
+    while (currentIndex != 0) {
+  
+      // Pick a remaining element.
+      randomIndex = Math.floor(Math.random() * currentIndex);
+      currentIndex--;
+  
+      // And swap it with the current element.
+      [array[currentIndex], array[randomIndex]] = [
+        array[randomIndex], array[currentIndex]];
+    }
+  
+    return array;
+  }
+
 //We will store our YouTube element here
 let videoElement: YouTubePlayer = null;
 
 //This component will contain a React player - as well as the associated elements
-function ReactPlayerPomodoro({pomodoros, breakLength, onComplete}: Props) {
+function ReactPlayerPomodoro({pomodoros, breakLength, onComplete, shufflePlaylists, shufflePlaylistItems}: Props) {
 
+    /*
+    //If shuffling videos and playlists - do it now
+    if (shufflePlaylists) {
+        pomodoros = shuffle(pomodoros);
+    }
+
+    if (shufflePlaylistItems) {
+        for (var i = 0; i < pomodoros.length; i++) {
+            pomodoros[i] = shuffle(pomodoros[i]);
+        }
+    }
+    */
     const [autoplay, setAutoplay] = useState(1);
     const [currentPlaylist, setCurrentPlaylist] = useState(0);
     const [currentVideo, setCurrentVideo] = useState(0);
@@ -148,6 +180,9 @@ function ReactPlayerPomodoro({pomodoros, breakLength, onComplete}: Props) {
     }
 
     return <>
+            <div style = {{display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',}}>
             <YouTube
                 videoId={getVideo()}
                 onPlay={onPlay}
@@ -160,9 +195,10 @@ function ReactPlayerPomodoro({pomodoros, breakLength, onComplete}: Props) {
                                     }
                         }}
 
-                style={{ pointerEvents: 'none' }}
+                style={{ pointerEvents: 'none', marginLeft: 'auto', marginRight: 'auto'}}
                 />
-                {<div style={{textAlign: 'center'}}>
+                </div>
+                {<div style={{textAlign: 'center', color: '#AFAFAF'}}>
                     <PomodoroTimer timestamp={timerLength} expiryFunction={nextPeriod}/>
                     <button onClick={endPeriodEarly} disabled = {skipDisabled}>{pomodoros[currentPlaylist] == null ? "Loading..." : getRestartLabel()}</button>
                 </div>}

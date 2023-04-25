@@ -1,7 +1,6 @@
 import { SetStateAction, useState } from 'react';
 
 interface Props {
-    //Search playlist - return true if successfully built playlist - else return false
     onSearch: (item: string) => void;
 }
 
