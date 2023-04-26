@@ -3,7 +3,7 @@ import { useTimer } from 'react-timer-hook'
 
 interface Props {
     timestamp: Date
-    expiryFunction: () => void
+    expiryFunction: (force_session_end: boolean) => void
 }
 
 function PomodoroTimer( {timestamp, expiryFunction}: Props) {
@@ -18,7 +18,7 @@ function PomodoroTimer( {timestamp, expiryFunction}: Props) {
         pause,
         resume,
         restart,
-    } = useTimer({expiryTimestamp: timestamp, onExpire: expiryFunction });
+    } = useTimer({expiryTimestamp: timestamp, onExpire: () => expiryFunction(true) });
 
     useEffect(() => {
 

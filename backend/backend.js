@@ -25,6 +25,43 @@ const fetchJsonOrUndefined = async (url, res) => {
     })
 };
 
+
+
+//Steal Fisher-Yates shuffle from Mike Bostock
+//Not nice to use type of any - but we won't be shuffling anything else in this project so it's a safe assumption
+function shuffle(array) {
+    let currentIndex = array.length,  randomIndex;
+  
+    // While there remain elements to shuffle.
+    while (currentIndex != 0) {
+  
+      // Pick a remaining element.
+      randomIndex = Math.floor(Math.random() * currentIndex);
+      currentIndex--;
+  
+      // And swap it with the current element.
+      [array[currentIndex], array[randomIndex]] = [
+        array[randomIndex], array[currentIndex]];
+    }
+  
+    return array;
+  }
+  
+function shufflePomodoros(toShuffle, shufflePlaylists, shuffleItems) {
+  
+    if (shufflePlaylists) {
+        toShuffle = shuffle(toShuffle);
+    }
+  
+    if (shuffleItems) {
+      for (var i = 0; i < toShuffle.length; i++) {
+        toShuffle[i] = shuffle(toShuffle[i]);
+      }
+    }
+  
+    return toShuffle;
+  }
+
 const toNumberDuration = (duration) => {
     const youtube_duration_re = /^PT((\d*)H)?(([0-5]?[0-9]|60)M)?(([0-5]?[0-9]|60)S)?$/;
     var matches = duration.match(youtube_duration_re);
@@ -83,6 +120,8 @@ app.get("/api", async (req, res) => {
             //TODO - allow users to ask for oversized playlists too
             var result = bestFitDecreasing(pomodoro, video => video['duration'], 25*60);
             
+            var pomodoros = shufflePomodoros(result.bins);
+
             res.send(result.bins);
         }
     }

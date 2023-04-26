@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import './App.css'
 import image from './assets/bg.png'
 import Searchbar from './components/Searchbar'
@@ -104,12 +104,12 @@ function App() {
   }
 
   //Pass in entered playlist - do basic validation and send to API
-  const getData = async (enteredPlaylist: string) => {
+  const getData = async (enteredPlaylist: string, shufflePlaylists: boolean, shuffleItems: boolean) => {
 
     var valid = validateUrlOrNotify(enteredPlaylist);
 
     if(valid) {
-      setBackendData(await fetch(`api/?playlist=${enteredPlaylist}`).then(resp => {
+      setBackendData(await fetch(`api/?playlist=${enteredPlaylist}?shufflePlaylists=${shufflePlaylists}?shuffleItems=${shuffleItems}`).then(resp => {
         if (resp.ok) {
           return resp.json();
         } else {
@@ -132,8 +132,7 @@ function App() {
                     backgroundColor: 'rgba(0,0,0,0.5)'
                 }}>
         <Searchbar onSearch={getData} />
-
-        {backendData ? complete ? <h1>Session complete!</h1> : <ReactPlayerPomodoro pomodoros={backendData} breakLength={25} onComplete={() => setComplete(true)} shufflePlaylists={true} shufflePlaylistItems={true}/> : null}
+        {backendData ? complete ? <h1>Session complete!</h1> : <ReactPlayerPomodoro pomodoros={backendData} breakLength={25}/> : null}
       </div>
       <ToastContainer />
     </>

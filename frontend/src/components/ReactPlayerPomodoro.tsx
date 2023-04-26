@@ -6,49 +6,13 @@ import PomodoroTimer from './PomodoroTimer';
 interface Props {
     pomodoros: playlistInfo;
     breakLength: number;
-    onComplete: () => void;
-    shufflePlaylists?: boolean;
-    shufflePlaylistItems?: boolean;
 }
-
-//Steal Fisher-Yates shuffle from Mike Bostock
-//Not nice to use type of any - but we won't be shuffling anything else in this project so it's a safe assumption
-function shuffle(array: any[]) {
-    let currentIndex = array.length,  randomIndex;
-  
-    // While there remain elements to shuffle.
-    while (currentIndex != 0) {
-  
-      // Pick a remaining element.
-      randomIndex = Math.floor(Math.random() * currentIndex);
-      currentIndex--;
-  
-      // And swap it with the current element.
-      [array[currentIndex], array[randomIndex]] = [
-        array[randomIndex], array[currentIndex]];
-    }
-  
-    return array;
-  }
 
 //We will store our YouTube element here
 let videoElement: YouTubePlayer = null;
 
 //This component will contain a React player - as well as the associated elements
-function ReactPlayerPomodoro({pomodoros, breakLength, onComplete, shufflePlaylists, shufflePlaylistItems}: Props) {
-
-    /*
-    //If shuffling videos and playlists - do it now
-    if (shufflePlaylists) {
-        pomodoros = shuffle(pomodoros);
-    }
-
-    if (shufflePlaylistItems) {
-        for (var i = 0; i < pomodoros.length; i++) {
-            pomodoros[i] = shuffle(pomodoros[i]);
-        }
-    }
-    */
+function ReactPlayerPomodoro({pomodoros, breakLength}: Props) {
     const [autoplay, setAutoplay] = useState(1);
     const [currentPlaylist, setCurrentPlaylist] = useState(0);
     const [currentVideo, setCurrentVideo] = useState(0);
@@ -73,6 +37,14 @@ function ReactPlayerPomodoro({pomodoros, breakLength, onComplete, shufflePlaylis
             }
         }
     }, [isPaused, videoElement]);
+    
+    const getTimerLength = (length: number) => {
+        const time = new Date();
+        time.setSeconds(time.getSeconds() + length);
+        return time;
+    }
+    
+    const [timerLength, setTimerLength] = useState(getTimerLength(getPlaylistLength()));
 
     //The following effect handles when the playlist updates
     //If the playlist updates - it alters the duration
@@ -84,14 +56,6 @@ function ReactPlayerPomodoro({pomodoros, breakLength, onComplete, shufflePlaylis
     const onReady = (event: YouTubePlayer) => {
         videoElement = event;
     }
-    
-    const getTimerLength = (length: number) => {
-        const time = new Date();
-        time.setSeconds(time.getSeconds() + length);
-        return time;
-    }
-    
-    const [timerLength, setTimerLength] = useState(getTimerLength(getPlaylistLength()));
 
     //This function will handle all the logic when a timer ends
     const nextPeriod = (force_session_end: boolean = false) => {
@@ -106,8 +70,7 @@ function ReactPlayerPomodoro({pomodoros, breakLength, onComplete, shufflePlaylis
                 }
                 else {
                     setOnBreak(false);
-                    setAutoplay(1);
-                    setCurrentPlaylist((currentPlaylist) => {return currentPlaylist + 1});
+                    setCurrentPlaylist(currentPlaylist + 1);
                     setCurrentVideo(0);
                     setIsPaused(false);
                 }
