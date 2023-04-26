@@ -4,7 +4,7 @@ import CheckList from './CheckList';
 
 
 interface Props {
-    onSearch: (item: string, shufflePlaylists: boolean, shuffleItems: boolean) => void;
+    onSearch: (item: string, sessionLength: number, shufflePlaylists: boolean, shuffleItems: boolean, breakLength: number) => void;
 }
 
 function Searchbar({onSearch}: Props) {
@@ -13,7 +13,6 @@ function Searchbar({onSearch}: Props) {
     const [playlist, setPlaylist] = useState('');
     const [shufflePlaylists, setShufflePlaylists] = useState(false);
     const [shuffleItems, setShuffleItems] = useState(false);
-    const [includeOversized, setIncludeOversized] = useState(false);
     const [sessionLength, setSessionLength] = useState(25);
     const [breakLength, setBreakLength] = useState(5);
 
@@ -38,12 +37,7 @@ function Searchbar({onSearch}: Props) {
                             label:  "Shuffle items?",
                             value:  shuffleItems,
                             setter: setShuffleItems
-                        },
-                        {
-                            label:  "Include oversized playlists?",
-                            value:  includeOversized,
-                            setter: setIncludeOversized
-                        },
+                        }
                         ];
 
     return (
@@ -55,11 +49,11 @@ function Searchbar({onSearch}: Props) {
                     style={{resize: "none", width: "60%"}}
                 />
 
-                <button style={{float: 'right', marginLeft: 'auto'}} onClick={() => onSearch(playlist, shufflePlaylists, shuffleItems)}>Pomodoroise!</button>
+                <button style={{float: 'right', marginLeft: 'auto'}} onClick={() => onSearch(playlist, sessionLength, shufflePlaylists, shuffleItems, breakLength)}>Pomodoroise!</button>
             </div>
             <div style={{padding: '1em', display: 'flex', alignContent: 'center'}}>
-            <NumberField label={"Set session length (minutes)"} set_number={setSessionLength} value={sessionLength} />
-            <NumberField label={"Set break length (minutes)"} set_number={setBreakLength} value={breakLength} />
+            <NumberField label={"Set session length (minutes)"} set_number={setSessionLength} lowest_value={10} value={sessionLength} />
+            <NumberField label={"Set break length (minutes)"} set_number={setBreakLength} lowest_value={0} value={breakLength} />
             <CheckList checkbox_list={checkboxes} />
             </div>
         </>

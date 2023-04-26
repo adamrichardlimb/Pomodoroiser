@@ -13,6 +13,7 @@ let videoElement: YouTubePlayer = null;
 
 //This component will contain a React player - as well as the associated elements
 function ReactPlayerPomodoro({pomodoros, breakLength}: Props) {
+
     const [autoplay, setAutoplay] = useState(1);
     const [currentPlaylist, setCurrentPlaylist] = useState(0);
     const [currentVideo, setCurrentVideo] = useState(0);

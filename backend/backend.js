@@ -81,6 +81,16 @@ const toNumberDuration = (duration) => {
 
 app.get("/api", async (req, res) => {
     const playlist_id = req.query.list;
+    const sessionLength = req.query.sessionLength;
+    const breakLength = req.query.breakLength;
+
+    if (sessionLength < 10) {
+        res.status(403);
+        res.send("Bad session length!");
+    }
+
+    const shufflePlaylists = req.query.shufflePlaylists == 'true';
+    const shuffleItems = req.query.shuffleItems == 'true';
 
     //TODO - create logic to call this until the maximum calls have been made - or we run out of videos
     const playlist_url = `https://youtube.googleapis.com/youtube/v3/playlistItems?part=contentDetails&maxResults=50&playlistId=${playlist_id}&key=${API_KEY}`;
@@ -118,11 +128,9 @@ app.get("/api", async (req, res) => {
             //Nothing we can do about this but give people the best results first
 
             //TODO - allow users to ask for oversized playlists too
-            var result = bestFitDecreasing(pomodoro, video => video['duration'], 25*60);
-            
-            var pomodoros = shufflePomodoros(result.bins);
+            var result = bestFitDecreasing(pomodoro, video => video['duration'], sessionLength*60);
 
-            res.send(result.bins);
+            res.send({pomodoros: shufflePomodoros(result.bins, shufflePlaylists, shuffleItems), breakLength: breakLength * 60});
         }
     }
 });

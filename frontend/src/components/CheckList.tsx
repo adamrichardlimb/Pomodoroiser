@@ -9,7 +9,7 @@ function CheckList({checkbox_list}: Props) {
     return <>
         <div style = {{display: 'flex', flexDirection: 'column', float: 'right', marginLeft: 'auto'}}>
             {checkbox_list.map(cb => (
-                <CheckBox label={cb.label} setter={cb.setter} value={cb.value} />
+                <CheckBox label={cb.label} setter={cb.setter} value={cb.value} key={cb.label}/>
             ))}
         </div>
     </>

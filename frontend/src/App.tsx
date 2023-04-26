@@ -49,14 +49,14 @@ function App() {
        function ( gltf ) {
           tomato = gltf.scene;
 
-          for(var i=0; i<10; i++) {
+          for(var i=0; i<50; i++) {
             var next_pomodoro = tomato.clone();
             next_pomodoro.scale.set(3,3,3);
 
             next_pomodoro.position.set(
               getRandomArbitrary(-40, 40),
               getRandomArbitrary(-30, 30),
-              0);
+              getRandomArbitrary(-100, -5),);
             scene.add(next_pomodoro);
             tomatoes.push(next_pomodoro);
           }
@@ -104,12 +104,12 @@ function App() {
   }
 
   //Pass in entered playlist - do basic validation and send to API
-  const getData = async (enteredPlaylist: string, shufflePlaylists: boolean, shuffleItems: boolean) => {
+  const getData = async (enteredPlaylist: string, sessionLength: number, shufflePlaylists: boolean, shuffleItems: boolean, breakLength: number) => {
 
     var valid = validateUrlOrNotify(enteredPlaylist);
 
     if(valid) {
-      setBackendData(await fetch(`api/?playlist=${enteredPlaylist}?shufflePlaylists=${shufflePlaylists}?shuffleItems=${shuffleItems}`).then(resp => {
+      setBackendData(await fetch(`api/?playlist=${enteredPlaylist}&sessionLength=${sessionLength}&shufflePlaylists=${shufflePlaylists}&shuffleItems=${shuffleItems}&breakLength=${breakLength}`).then(resp => {
         if (resp.ok) {
           return resp.json();
         } else {
@@ -132,7 +132,7 @@ function App() {
                     backgroundColor: 'rgba(0,0,0,0.5)'
                 }}>
         <Searchbar onSearch={getData} />
-        {backendData ? complete ? <h1>Session complete!</h1> : <ReactPlayerPomodoro pomodoros={backendData} breakLength={25}/> : null}
+        {backendData ? complete ? <h1>Session complete!</h1> : <ReactPlayerPomodoro pomodoros={backendData["pomodoros"]} breakLength={backendData["breakLength"]}/> : null}
       </div>
       <ToastContainer />
     </>
