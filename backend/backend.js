@@ -1,10 +1,8 @@
-//Bring in environment variables
-require('dotenv').config()
-
-const API_KEY = process.env.API_KEY;
 const { bestFitDecreasing } = require('bin-packer');
 const express = require('express');
 const app = express();
+
+var API_KEY = process.env.API_KEY
 
 const fetchJsonOrUndefined = async (url, res) => {
     return fetch(url).then(resp => {

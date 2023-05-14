@@ -1,0 +1,36 @@
+version: '3'
+
+volumes:
+  backend_vol:
+  frontend_vol:
+
+services:
+  server:
+    image: adamrichardlimb/pomodoro-backend
+    build: ./backend
+    expose:
+      - ${APP_SERVER_PORT}
+    environment:
+      API_HOST: ${API_HOST}
+      API_KEY: ${API_KEY}
+      APP_SERVER_PORT: ${APP_SERVER_PORT}
+    ports:
+      - ${APP_SERVER_PORT}:${APP_SERVER_PORT}
+    volumes:
+      - backend_vol:/backend/src/
+    command: npm run dev
+    
+  client:
+    image: adamrichardlimb/pomodoro-frontend
+    build: ./frontend
+    environment:
+      - REACT_APP_PORT=${REACT_APP_PORT}
+    expose:
+      - ${REACT_APP_PORT}
+    ports:
+      - ${REACT_APP_PORT}:${REACT_APP_PORT}
+    volumes:
+      - frontend_vol:/frontend/src/
+    links:
+      - server
+    command: npm run dev
